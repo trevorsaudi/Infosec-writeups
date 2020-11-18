@@ -134,3 +134,99 @@ Double Precision 	l 			8
 
 
 
+###If statements
+
+The general format of an if statement is
+
+```
+if(condition){
+
+  do-stuff-here
+
+}else if(condition) //this is an optional condition {
+
+
+  do-stuff-here
+
+}else {
+
+
+  do-stuff-here
+
+}
+```
+If statements use 3 important instructions in assembly
+
+1. ``` cmpq source2, source1```: it is like computing a-b without setting the destination
+2. ```testq source2, source1```: it is like computing a&b without setting destination 
+3. Jump instructions which are used to transfer control to different instructions and there are different types of jumps
+
+```
+Jump type  		Descriptions
+jmp 				unconditional
+je 					equal/Zero
+jne 				Not equal/Not Zero
+js 					Negative
+jns 				Nonnegative
+jg 					Greater
+jge 				Greater or Equal
+jl   				Less					
+jle 				Less or Equal
+ja 					Above(unsigned)
+jb 					Below(unsigned)
+```
+- the last 2 values cannot be negative. while signed integers represent both positive and negativ values. 
+- Signed integers are represented in the two's complement while unsigned use normal binary calculations
+
+
+#Analysing megabeets_0x1
+
+##Binary info
+- Getting information from the binary using ```rabin2```
+
+```
+rabin2 allows extracting information from binary files inlcuding sections, headers, imports, strings, entrypoints, etc. It can then export the output in several formats. rabin2 is able to understand many file formats such as ELF, PE, Mach-O, Java class
+```
+- Calling rabin2 with the -I flag prints the binary information suchas the OS, language, endianness, architecture, mitigations and more
+
+- We use r2 to examine the program. Verify the entry point address using ie
+
+##Analysis
+
+-radare2 doesn't analyse the file by default because analysis is a complex process that can take a long time especially with large file
+- we can use aaa
+
+##Flags
+
+- After the analysis,r2 associates names to interesting offsets in the file such as Sections, Functions, Symbils, and Strings. Thos names are called Flags and can be grouped into 'flag spaces'
+- A flag space is a namespace for flags of similar characteristics or type.
+
+- ```fs``` lists flag spaces
+- We can choose a flag space using fs <flagspace> and print the flags it contains using f.
+
+- ```fs imports; f``` flags the imports used by the binary
+- ``` fs * ``` going back to the default selection of flagspaces(all of them)
+
+##Strings 
+
+- We see r2 flagged some offsets as strings, some sort of variable names. We can have a look at the strings themselves using :
+	``` iz ``` - List strings in data sections
+	``` izz ``` - Search for strings in the whole binary
+
+ - ``` axt @@ str.*``` axt stands for *analyze x-refs to*
+ axt is used to "find data/code references to this address"
+ - The special operator ```@@``` is like a foreach iterator sign, used to repeat a command over a list of offsets (see @@?) and ```str.*```is a wild card for all the flags that start with str.
+
+- This combination helps us to list the strings flags and the function name where they are used and the referencing instruction. Make sure to select the strings flagspace(default use ``` fs *```)
+
+##Seeking
+
+- At the start we were at the entry point of the program. The strings listed are all referenced by main. To move on we need to use the seek command represented by ``` s``` .
+- Before moving on we can check for other funtions that r2 flagged for us using the ``` afl ``` command. (analyze functions list)
+- We see some interesting functions like sym.beet and sym.rot13
+
+##Disassembling
+
+#main function
+
+- Time to look at some sweet assembly. we need to seek to the function using ``` s main``` and then disassemble using 	``` pdf``` 

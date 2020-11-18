@@ -46,3 +46,6 @@ Host: portswigger.net`
 
 - In short, you need to identify whether you are able to modify the Host header and still reach the target application with your request. If so, you can use this header to probe the application and observe what effect this has on the response.
 
+
+
+16efbcee480f1bb7a0db0fdd5f66bad6
